@@ -4,14 +4,20 @@ import Campaign from "@/models/Campaign";
 import { logger } from "@/lib/logger";
 import { summarizeCampaignPerformance } from "@/lib/ai";
 
+export interface RouteContext {
+  params: {
+    id: string;
+  };
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     await connectDB();
     
-    const campaignId = params.id;
+    const campaignId = context.params.id;
     if (!campaignId) {
       return NextResponse.json({ error: "Campaign ID is required" }, { status: 400 });
     }

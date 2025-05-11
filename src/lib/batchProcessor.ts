@@ -11,6 +11,15 @@ declare global {
   var batchProcessorInstance: BatchProcessor | undefined;
 }
 
+// Update to use a more generic type that matches both Redis and MockRedisClient
+interface RedisClient {
+  ping(): Promise<string>;
+  rpush(key: string, value: string): Promise<number>;
+  llen(key: string): Promise<number>;
+  rpop(key: string): Promise<string | null>;
+  pipeline(): any;
+}
+
 interface CustomerRecord {
   _id: string;
   phone?: string;
@@ -294,17 +303,30 @@ export class BatchProcessor {
   private batchSize: number;
   private processingInterval: number;
   private isProcessing: boolean;
-  private redis: Redis;
+  private redis: RedisClient;
   private messageQueueKey = 'message:queue';
   private receiptQueueKey = 'receipt:queue';
   private customerQueueKey = 'customer:queue';
+  private redisAvailable: boolean = true;
 
   private constructor() {
     this.batchSize = 50; // Process 50 messages at a time
     this.processingInterval = 5000; // Process every 5 seconds
     this.isProcessing = false;
     this.redis = redis;
+    this.checkRedisAvailability();
     this.startProcessing();
+  }
+
+  private async checkRedisAvailability(): Promise<void> {
+    try {
+      await this.redis.ping();
+      this.redisAvailable = true;
+      logger.info('Redis is available for batch processing');
+    } catch (error) {
+      this.redisAvailable = false;
+      logger.warn('Redis is not available, batch processing will function in limited mode');
+    }
   }
 
   public static getInstance(): BatchProcessor {
@@ -316,25 +338,40 @@ export class BatchProcessor {
 
   public async addMessageBatch(batch: MessageBatch): Promise<void> {
     try {
+      if (!this.redisAvailable) {
+        logger.warn('Redis not available - message batch queuing skipped');
+        return;
+      }
       await this.redis.rpush(this.messageQueueKey, JSON.stringify(batch));
       logger.info(`Added message batch for segment ${batch.segmentId}`);
     } catch (error) {
+      this.redisAvailable = false;
       logger.error('Error adding message batch to queue', error);
-      throw error;
+      // Don't throw error to prevent app from crashing
     }
   }
 
   public async addReceipt(receipt: DeliveryReceipt): Promise<void> {
     try {
+      if (!this.redisAvailable) {
+        logger.warn('Redis not available - receipt queuing skipped');
+        return;
+      }
       await this.redis.rpush(this.receiptQueueKey, JSON.stringify(receipt));
     } catch (error) {
+      this.redisAvailable = false;
       logger.error('Error adding receipt to queue', error);
-      throw error;
+      // Don't throw error to prevent app from crashing
     }
   }
 
   public async addBulkReceipts(receipts: DeliveryReceipt[]): Promise<void> {
     try {
+      if (!this.redisAvailable) {
+        logger.warn('Redis not available - bulk receipts queuing skipped');
+        return;
+      }
+      
       const batchId = progressTracker.startBatch('receipt-queue', receipts.length);
       
       // Add all receipts to the queue
@@ -356,18 +393,24 @@ export class BatchProcessor {
       
       logger.info(`Added batch of ${receipts.length} receipts to processing queue`);
     } catch (error) {
+      this.redisAvailable = false;
       logger.error('Error adding bulk receipts to queue', error);
-      throw error;
+      // Don't throw error to prevent app from crashing
     }
   }
 
   public async addToBatch(operation: CustomerOperation): Promise<void> {
     try {
+      if (!this.redisAvailable) {
+        logger.warn('Redis not available - customer operation queuing skipped');
+        return;
+      }
       await this.redis.rpush(this.customerQueueKey, JSON.stringify(operation));
       logger.debug(`Added ${operation.operation} operation for ${operation.model}`);
     } catch (error) {
+      this.redisAvailable = false;
       logger.error('Error adding operation to queue', error);
-      throw error;
+      // Don't throw error to prevent app from crashing
     }
   }
 
@@ -377,12 +420,20 @@ export class BatchProcessor {
 
     while (this.isProcessing) {
       try {
-        // Process message batches
-        await this.processMessageQueue();
-        // Process delivery receipts
-        await this.processReceiptQueue();
-        // Process customer operations
-        await this.processCustomerQueue();
+        // Check Redis availability periodically
+        await this.checkRedisAvailability();
+        
+        if (this.redisAvailable) {
+          // Process message batches
+          await this.processMessageQueue();
+          // Process delivery receipts
+          await this.processReceiptQueue();
+          // Process customer operations
+          await this.processCustomerQueue();
+        } else {
+          logger.debug('Skipping batch processing - Redis not available');
+        }
+        
         // Wait for next processing interval
         await new Promise(resolve => setTimeout(resolve, this.processingInterval));
       } catch (error) {
