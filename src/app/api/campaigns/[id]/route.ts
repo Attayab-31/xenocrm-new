@@ -6,12 +6,12 @@ import { summarizeCampaignPerformance } from "@/lib/ai";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     await connectDB();
     
-    const campaignId = context.params.id;
+    const campaignId = params.id;
     if (!campaignId) {
       return NextResponse.json({ error: "Campaign ID is required" }, { status: 400 });
     }
