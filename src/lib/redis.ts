@@ -7,6 +7,7 @@ const redisOptions = {
   },
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
+  tls: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
   reconnectOnError: (err: Error) => {
     const targetError = 'READONLY';
     if (err.message.includes(targetError)) {

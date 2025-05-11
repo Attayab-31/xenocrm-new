@@ -38,6 +38,41 @@ Run the development server:npm run dev
 
 Access the app at http://localhost:3000.
 
+Vercel Deployment Instructions
+
+1. Install Vercel CLI:
+```bash
+npm install -g vercel
+```
+
+2. Login to Vercel:
+```bash
+vercel login
+```
+
+3. Configure Environment Variables in Vercel Dashboard:
+   - Go to your project settings
+   - Add the following environment variables:
+     - `MONGODB_URI`: Your MongoDB Atlas connection string
+     - `NEXTAUTH_SECRET`: A secure random string
+     - `NEXTAUTH_URL`: Your Vercel deployment URL
+     - `GOOGLE_CLIENT_ID`: Your Google OAuth client ID
+     - `GOOGLE_CLIENT_SECRET`: Your Google OAuth client secret
+     - `API_KEY`: Your API key for webhook endpoints
+     - `REDIS_URL`: Your Redis connection string (if using Redis)
+
+4. Deploy using the provided script:
+```powershell
+./deploy.ps1
+```
+
+Production Considerations
+- Use MongoDB Atlas for the database
+- Configure Google OAuth callback URLs
+- Set up Redis using Upstash or similar service
+- Enable proper CORS settings for your domain
+- Configure proper security headers
+
 Architecture Diagram
 [Client] --> [Next.js App]
                 |

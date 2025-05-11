@@ -72,15 +72,15 @@ async function connectToDatabase() {
   }
 
   // Create a new connection if none exists
-  if (!global.mongoose.promise) {
-    const opts = {
+  if (!global.mongoose.promise) {    const opts = {
       bufferCommands: false,
-      maxPoolSize: 10,
+      maxPoolSize: process.env.NODE_ENV === 'production' ? 5 : 10,
       socketTimeoutMS: 30000,
       serverSelectionTimeoutMS: 5000,
       retryWrites: true,
       retryReads: true,
-      family: 4 // Use IPv4
+      family: 4, // Use IPv4
+      autoIndex: process.env.NODE_ENV !== 'production' // Disable auto-indexing in production
     };
 
     try {
