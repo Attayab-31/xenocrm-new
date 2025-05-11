@@ -4,15 +4,9 @@ import Campaign from "@/models/Campaign";
 import { logger } from "@/lib/logger";
 import { summarizeCampaignPerformance } from "@/lib/ai";
 
-interface GetCampaignContext {
-  params: {
-    id: string;
-  };
-}
-
 export async function GET(
   request: NextRequest,
-  context: GetCampaignContext
+  context: { params: { id: string } }
 ) {
   try {
     await connectDB();
