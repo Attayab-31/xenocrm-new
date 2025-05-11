@@ -8,8 +8,8 @@ import { summarizeCampaignPerformance } from "@/lib/ai";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
-) {
+  context: { params: { id: string } }
+){
   // const session = await getServerSession(authOptions);
   
   try {
