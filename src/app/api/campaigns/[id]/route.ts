@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongoose";
 import Campaign from "@/models/Campaign";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]";
+// import { getServerSession } from "next-auth";
+// import { authOptions } from "../../auth/[...nextauth]";
 import { logger } from "@/lib/logger";
 import { summarizeCampaignPerformance } from "@/lib/ai";
 
@@ -10,7 +10,7 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
   
   try {
     await connectDB();

@@ -25,72 +25,72 @@ const campaignSchema = z.object({
   tag: z.string().optional().default("General")
 });
 
-function buildQueryFromRules(rules: any[]) {
-  const query: any = {};
-  const andConditions: any[] = [];
-  const orConditions: any[] = [];
+// function buildQueryFromRules(rules: any[]) {
+//   const query: any = {};
+//   const andConditions: any[] = [];
+//   const orConditions: any[] = [];
 
-  rules.forEach((rule, index) => {
-    const condition: any = {};
+//   rules.forEach((rule, index) => {
+//     const condition: any = {};
     
-    // Convert the value to appropriate type based on the field
-    let value = rule.value;
-    if (rule.field === 'spend' || rule.field === 'visitCount') {
-      value = parseInt(value, 10);
-    }
+//     // Convert the value to appropriate type based on the field
+//     let value = rule.value;
+//     if (rule.field === 'spend' || rule.field === 'visitCount') {
+//       value = parseInt(value, 10);
+//     }
 
-    // Build the condition based on the operator
-    switch (rule.operator) {
-      case '>':
-        condition[rule.field] = { $gt: value };
-        break;
-      case '<':
-        condition[rule.field] = { $lt: value };
-        break;
-      case '=':
-        condition[rule.field] = value;
-        break;
-      case '>=':
-        condition[rule.field] = { $gte: value };
-        break;
-      case '<=':
-        condition[rule.field] = { $lte: value };
-        break;
-      case '!=':
-        condition[rule.field] = { $ne: value };
-        break;
-      default:
-        condition[rule.field] = value;
-    }
+//     // Build the condition based on the operator
+//     switch (rule.operator) {
+//       case '>':
+//         condition[rule.field] = { $gt: value };
+//         break;
+//       case '<':
+//         condition[rule.field] = { $lt: value };
+//         break;
+//       case '=':
+//         condition[rule.field] = value;
+//         break;
+//       case '>=':
+//         condition[rule.field] = { $gte: value };
+//         break;
+//       case '<=':
+//         condition[rule.field] = { $lte: value };
+//         break;
+//       case '!=':
+//         condition[rule.field] = { $ne: value };
+//         break;
+//       default:
+//         condition[rule.field] = value;
+//     }
 
-    // Handle connectors (AND/OR)
-    if (index === 0 || rules[index - 1].connector === 'AND') {
-      andConditions.push(condition);
-    } else if (rules[index - 1].connector === 'OR') {
-      if (andConditions.length > 0) {
-        orConditions.push({ $and: [...andConditions] });
-        andConditions.length = 0;
-      }
-      orConditions.push(condition);
-    }
-  });
+//     // Handle connectors (AND/OR)
+//     if (index === 0 || rules[index - 1].connector === 'AND') {
+//       andConditions.push(condition);
+//     } else if (rules[index - 1].connector === 'OR') {
+//       if (andConditions.length > 0) {
+//         orConditions.push({ $and: [...andConditions] });
+//         andConditions.length = 0;
+//       }
+//       orConditions.push(condition);
+//     }
+//   });
 
-  // Add any remaining AND conditions
-  if (andConditions.length > 0) {
-    if (orConditions.length > 0) {
-      orConditions.push({ $and: andConditions });
-    } else {
-      return { $and: andConditions };
-    }
-  }
+//   // Add any remaining AND conditions
+//   if (andConditions.length > 0) {
+//     if (orConditions.length > 0) {
+//       orConditions.push({ $and: andConditions });
+//     } else {
+//       return { $and: andConditions };
+//     }
+//   }
 
-  // If we have OR conditions, use them
-  if (orConditions.length > 0) {
-    return { $or: orConditions };
-  }
+//   // If we have OR conditions, use them
+//   if (orConditions.length > 0) {
+//     return { $or: orConditions };
+//   }
 
-  return query;
-}
+//   return query;
+// }
 
 export async function POST(request: Request) {
   try {
