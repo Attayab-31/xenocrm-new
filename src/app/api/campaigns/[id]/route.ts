@@ -11,11 +11,10 @@ export async function GET(
   context: { params: { id: string } }
 ){
   // const session = await getServerSession(authOptions);
-  
-  try {
+    try {
     await connectDB();
     
-    const campaignId = params.id;
+    const campaignId = context.params.id;
     if (!campaignId) {
       return NextResponse.json({ error: "Campaign ID is required" }, { status: 400 });
     }
