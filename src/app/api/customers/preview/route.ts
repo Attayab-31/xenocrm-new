@@ -105,7 +105,7 @@ function processNumericFields(filter: any): any {
 }
 
 export async function POST(
-  request: Request
+  request: NextRequest
 ) {
   try {
     await connectToDatabase();

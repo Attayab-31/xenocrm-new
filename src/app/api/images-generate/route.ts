@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
 export async function POST(
-  request: Request
+  request: NextRequest
 ) {
      try {
        const { prompt, imageCount } = await request.json();

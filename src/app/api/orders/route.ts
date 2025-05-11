@@ -12,7 +12,7 @@ const orderSchema = z.object({
   date: z.string().datetime({ message: 'Invalid date format' }),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     await connectToDatabase();
     const body = await request.json();
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET(
-  request: Request
+  request: NextRequest
 ) {
   try {
     await connectToDatabase();

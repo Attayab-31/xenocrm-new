@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import connectDB from "@/lib/mongoose";
 import Campaign from "@/models/Campaign";
 import Segment from "@/models/Segment";
@@ -26,79 +27,10 @@ const campaignSchema = z.object({
   imageUrl: z.string().optional()
 });
 
-// function buildQueryFromRules(rules: any[]) {
-//   const query: any = {};
-//   const andConditions: any[] = [];
-//   const orConditions: any[] = [];
-
-//   rules.forEach((rule, index) => {
-//     const condition: any = {};
-    
-//     // Convert the value to appropriate type based on the field
-//     let value = rule.value;
-//     if (rule.field === 'spend' || rule.field === 'visitCount') {
-//       value = parseInt(value, 10);
-//     }
-
-//     // Build the condition based on the operator
-//     switch (rule.operator) {
-//       case '>':
-//         condition[rule.field] = { $gt: value };
-//         break;
-//       case '<':
-//         condition[rule.field] = { $lt: value };
-//         break;
-//       case '=':
-//         condition[rule.field] = value;
-//         break;
-//       case '>=':
-//         condition[rule.field] = { $gte: value };
-//         break;
-//       case '<=':
-//         condition[rule.field] = { $lte: value };
-//         break;
-//       case '!=':
-//         condition[rule.field] = { $ne: value };
-//         break;
-//       default:
-//         condition[rule.field] = value;
-//     }
-
-//     // Handle connectors (AND/OR)
-//     if (index === 0 || rules[index - 1].connector === 'AND') {
-//       andConditions.push(condition);
-//     } else if (rules[index - 1].connector === 'OR') {
-//       if (andConditions.length > 0) {
-//         orConditions.push({ $and: [...andConditions] });
-//         andConditions.length = 0;
-//       }
-//       orConditions.push(condition);
-//     }
-//   });
-
-//   // Add any remaining AND conditions
-//   if (andConditions.length > 0) {
-//     if (orConditions.length > 0) {
-//       orConditions.push({ $and: andConditions });
-//     } else {
-//       return { $and: andConditions };
-//     }
-//   }
-
-//   // If we have OR conditions, use them
-//   if (orConditions.length > 0) {
-//     return { $or: orConditions };
-//   }
-
-//   return query;
-// }
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     await connectDB();
     const body = await request.json();
-    
-    // Get the user session for proper userId
     const session = await getServerSession(authOptions);
     
     try {
@@ -238,13 +170,15 @@ export async function POST(request: Request) {
           // Direct console log for batch completion
           console.log(`\x1b[42m\x1b[30m BATCH COMPLETED ${batchIndex + 1}/${totalBatches} \x1b[0m Processed ${currentBatchSize} customers`);
         } catch (error) {
-          logger.error(`❌ Error in batch #${batchIndex + 1}`, error);
+          // Handle batch errors with type checking
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          logger.error(`Error in batch processing: ${errorMessage}`);
+          console.log(`\x1b[41m\x1b[37m BATCH ERROR \x1b[0m ${errorMessage}`);
           
-          // Direct console log for batch error
-          console.log(`\x1b[41m\x1b[37m BATCH ERROR ${batchIndex + 1}/${totalBatches} \x1b[0m ${error.message || 'Unknown error'}`);
+          return NextResponse.json({ error: errorMessage }, { status: 500 });
         }
         
-        // Add a pause after each batch to allow VendorApi to collect and process receipts
+        // Add a pauseafter each batch to allow VendorApi to collect and process receipts
         if (batchIndex < totalBatches - 1) {
           logger.info(`Waiting for receipt processing before next batch...`);
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -306,7 +240,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   
   // Allow access even if not authenticated, but with limited functionality

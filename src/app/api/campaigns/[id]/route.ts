@@ -1,17 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongoose";
 import Campaign from "@/models/Campaign";
 import { logger } from "@/lib/logger";
 import { summarizeCampaignPerformance } from "@/lib/ai";
 
+interface GetCampaignContext {
+  params: {
+    id: string;
+  };
+}
+
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: GetCampaignContext
 ) {
   try {
     await connectDB();
     
-    const campaignId = params.id;
+    const campaignId = context.params.id;
     if (!campaignId) {
       return NextResponse.json({ error: "Campaign ID is required" }, { status: 400 });
     }
