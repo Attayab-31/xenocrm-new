@@ -1,20 +1,17 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongoose";
 import Campaign from "@/models/Campaign";
-// import { getServerSession } from "next-auth";
-// import { authOptions } from "../../auth/[...nextauth]";
 import { logger } from "@/lib/logger";
 import { summarizeCampaignPerformance } from "@/lib/ai";
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
-){
-  // const session = await getServerSession(authOptions);
-    try {
+  { params }: { params: { id: string } }
+) {
+  try {
     await connectDB();
     
-    const campaignId = context.params.id;
+    const campaignId = params.id;
     if (!campaignId) {
       return NextResponse.json({ error: "Campaign ID is required" }, { status: 400 });
     }
@@ -48,4 +45,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}

@@ -8,13 +8,17 @@ const redisOptions = {
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
   tls: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+  connectTimeout: 20000,
+  disconnectTimeout: 5000,
+  commandTimeout: 10000,
   reconnectOnError: (err: Error) => {
     const targetError = 'READONLY';
     if (err.message.includes(targetError)) {
       return true;
     }
     return false;
-  }
+  },
+  lazyConnect: true, // Only connect when needed
 };
 
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', redisOptions);
