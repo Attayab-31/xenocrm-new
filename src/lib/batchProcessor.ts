@@ -72,7 +72,7 @@ function processNumericFields(filter: any): any {
   
   for (const key of Object.keys(filter)) {
     // Fix malformed operators - this is critical for MongoDB to recognize operators
-    const fixedKey = key.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt');
+    const fixedKey = key.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt').replace('$<', '$lt');
     const value = filter[key];
     
     // Handle logical operators
@@ -97,7 +97,7 @@ function processNumericFields(filter: any): any {
         
         for (const op of Object.keys(value)) {
           // Fix any malformed operators in nested objects
-          const fixedOp = op.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt');
+          const fixedOp = op.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt').replace('$<', '$lt');
           let opValue = value[op];
           
           if (typeof opValue === 'string') {
@@ -154,7 +154,7 @@ function convertFilterValues(filter: Record<string, any>): Record<string, any> {
   // Process each key in the filter
   for (const key of Object.keys(filter)) {
     // Fix malformed operators
-    const fixedKey = key.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt');
+    const fixedKey = key.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt').replace('$<', '$lt');
     const value = filter[key];
     
     // Handle logical operators
@@ -177,7 +177,7 @@ function convertFilterValues(filter: Record<string, any>): Record<string, any> {
       
       for (const op of Object.keys(value)) {
         // Fix malformed operators
-        const fixedOp = op.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt');
+        const fixedOp = op.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt').replace('$<', '$lt');
         let opValue = value[op];
         
         // Handle regex operator
@@ -272,6 +272,7 @@ interface DeliveryReceipt {
   status: string;
   timestamp: Date;
   campaignId?: string;
+  imageUrl?: string;
 }
 
 interface MessageBatch {
@@ -279,6 +280,7 @@ interface MessageBatch {
   messageContent: string;
   audienceFilter: Record<string, any>;
   campaignId?: string;
+  imageUrl?: string;
 }
 
 interface CustomerOperation {
@@ -502,12 +504,13 @@ export class BatchProcessor {
             // Create communication logs in batches
             const logs = customers.map((customer: CustomerRecord) => ({
               customerId: customer._id,
+              message: batch.messageContent,
+              status: 'pending',
+              timestamp: new Date(),
               segmentId: batch.segmentId,
               campaignId: batch.campaignId,
-              messageContent: batch.messageContent,
-              status: 'pending',
-              channel: customer.phone ? 'sms' : 'email',
-              timestamp: new Date()
+              imageUrl: batch.imageUrl,
+              channel: customer.phone ? 'sms' : 'email'
             }));
 
             // Save logs in smaller sub-batches for better performance
@@ -591,9 +594,11 @@ export class BatchProcessor {
               },
               update: {
                 $set: {
+                  message: receipt.message,
                   status: receipt.status,
                   deliveryTimestamp: receipt.timestamp,
-                  lastUpdated: new Date()
+                  lastUpdated: new Date(),
+                  imageUrl: receipt.imageUrl
                 }
               }
             }
@@ -686,7 +691,7 @@ function simplifyFilter(filter: any): any {
   // Only keep direct equality conditions for non-numeric fields
   for (const key of Object.keys(filter)) {
     // Fix malformed operators
-    const fixedKey = key.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt');
+    const fixedKey = key.replace('$<=', '$lte').replace('$>=', '$gte').replace('$=', '$eq').replace('$>', '$gt').replace('$<', '$lt');
     
     // Skip operators and numeric fields
     if (fixedKey.startsWith('$') || numericFields.includes(fixedKey)) {

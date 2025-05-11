@@ -22,7 +22,8 @@ const campaignSchema = z.object({
   segmentId: z.string(),
   name: z.string().min(1, "Name is required"),
   message: z.string().optional().default(""),
-  tag: z.string().optional().default("General")
+  tag: z.string().optional().default("General"),
+  imageUrl: z.string().optional()
 });
 
 // function buildQueryFromRules(rules: any[]) {
@@ -136,6 +137,7 @@ export async function POST(request: Request) {
         sentCount: 0,
         failedCount: 0,
         tag: body.tag || 'General',
+        imageUrl: body.imageUrl,
         customers: customers.map((c: CustomerDocument) => {
           const id = c._id ? c._id.toString() : (c.id || '');
           return id;
@@ -149,6 +151,7 @@ export async function POST(request: Request) {
       
       // Process customers in batches
       const message = body.message || segment.messageContent || "";
+      const imageUrl = body.imageUrl || segment.imageUrl;
       const campaignId = campaign._id.toString();
       // Increase batch size to match vendorApi's batch size for optimal batching
       const MAX_BATCH_SIZE = 50; // Match vendorApi's batch size
@@ -204,7 +207,8 @@ export async function POST(request: Request) {
               email: customer_doc.email || ""
             },
             message,
-            campaignId
+            campaignId,
+            imageUrl
           ).then(result => {
             // Store result and update counters
             results.push(result);

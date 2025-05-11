@@ -10,24 +10,37 @@ interface UnsplashImage {
   id: string;
   urls: {
     small: string;
+    regular: string; // Add regular size for better quality
   };
   alt_description: string;
 }
 
-const UnsplashSelector: React.FC = () => {
+interface UnsplashSelectorProps {
+  onImageSelect: (imageUrl: string) => void; // Add callback prop for image selection
+}
+
+const UnsplashSelector: React.FC<UnsplashSelectorProps> = ({ onImageSelect }) => {
   const [images, setImages] = useState<UnsplashImage[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
   const fetchImages = async () => {
     try {
       const res = await fetch(
-        `https://api.unsplash.com/photos/random?count=2&client_id=${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}`
+        `https://api.unsplash.com/photos/random?count=3&client_id=${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}`
       );
       const data: UnsplashImage[] = await res.json();
       setImages(data);
       setSelectedImageId(null); // Reset selection
     } catch (error) {
       console.error('Error fetching images:', error);
+    }
+  };
+
+  const handleImageSelect = (id: string) => {
+    setSelectedImageId(id);
+    const selectedImage = images.find(img => img.id === id);
+    if (selectedImage) {
+      onImageSelect(selectedImage.urls.regular); // Pass the URL to parent component
     }
   };
 
@@ -39,7 +52,7 @@ const UnsplashSelector: React.FC = () => {
         <RadioGroup
           className="grid grid-cols-1 sm:grid-cols-3 gap-4"
           value={selectedImageId || ''}
-          onValueChange={setSelectedImageId}
+          onValueChange={handleImageSelect}
         >
           {images.map((image) => (
             <div key={image.id} className="flex flex-col items-center space-y-2">
@@ -58,7 +71,7 @@ const UnsplashSelector: React.FC = () => {
 
       {selectedImageId && (
         <div className="text-sm text-green-600">
-          Selected Image ID: {selectedImageId}
+          Image Selected ✓
         </div>
       )}
     </div>

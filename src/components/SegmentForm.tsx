@@ -31,6 +31,7 @@ export default function SegmentForm() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [messages, setMessages] = useState<string[]>([]);
   const [selectedMessage, setSelectedMessage] = useState('');
+  const [selectedImageUrl, setSelectedImageUrl] = useState('');
   const toast = useToast();
 
   const fields = [
@@ -208,7 +209,13 @@ export default function SegmentForm() {
           const segmentResponse = await fetch('/api/segments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, rules, audienceSize, message: selectedMessage }),
+            body: JSON.stringify({ 
+              name, 
+              rules, 
+              audienceSize, 
+              message: selectedMessage,
+              imageUrl: selectedImageUrl
+            }),
           });
 
           if (!segmentResponse.ok) {
@@ -235,7 +242,8 @@ export default function SegmentForm() {
             segmentId: segmentId, 
             name: `Campaign for ${name}`, 
             message: selectedMessage, 
-            tag 
+            tag,
+            imageUrl: selectedImageUrl
           };
           console.log("Sending to campaigns API:", campaignRequestData);
 
@@ -428,7 +436,7 @@ export default function SegmentForm() {
               >
                 Generate from Rules
               </Button>
-            <UnsplashSelector />  
+              <UnsplashSelector onImageSelect={(imageUrl) => setSelectedImageUrl(imageUrl)} />  
             </div>
             {messages.length > 0 && (
               <Select

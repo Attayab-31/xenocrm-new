@@ -125,6 +125,7 @@ export async function POST(req: NextRequest) {
       description: data.description,
       filter: processedFilter,
       messageContent: data.messageContent,
+      imageUrl: data.imageUrl,
       campaignId: data.campaignId
     });
     
@@ -138,8 +139,9 @@ export async function POST(req: NextRequest) {
     await batchProcessor.addMessageBatch({
       segmentId: segment._id.toString(),
       messageContent,
-      audienceFilter: processedFilter, // Use the processed filter here
-      campaignId: data.campaignId
+      audienceFilter: processedFilter,
+      campaignId: data.campaignId,
+      imageUrl: data.imageUrl
     });
 
     return NextResponse.json({ 

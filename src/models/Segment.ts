@@ -5,6 +5,7 @@ export interface ISegment extends Document {
   description?: string;
   filter: Record<string, any>;
   messageContent?: string;
+  imageUrl?: string;
   campaignId?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -25,6 +26,9 @@ const SegmentSchema = new Schema({
     required: [true, 'Filter criteria is required']
   },
   messageContent: {
+    type: String
+  },
+  imageUrl: {
     type: String
   },
   campaignId: {

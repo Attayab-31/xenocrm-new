@@ -79,6 +79,7 @@ import mongoose, { Schema, model, Model } from 'mongoose';
        message: string;
        status: string;
        timestamp: Date;
+       imageUrl?: string;
      }
 
      const CommunicationLogSchema = new Schema<ICommunicationLog>({
@@ -86,6 +87,7 @@ import mongoose, { Schema, model, Model } from 'mongoose';
        message: { type: String, required: true },
        status: { type: String, required: true },
        timestamp: { type: Date, required: true },
+       imageUrl: { type: String, required: false },
      });
 
      const CommunicationLog: Model<ICommunicationLog> = mongoose.models.CommunicationLog || model<ICommunicationLog>('CommunicationLog', CommunicationLogSchema);

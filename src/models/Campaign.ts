@@ -8,7 +8,8 @@ import mongoose, { Schema, model, Model } from 'mongoose';
        failedCount: number;
        createdAt: Date;
        customers: string[];
-       tag: string
+       tag: string;
+       imageUrl?: string;
      }
 
      const CampaignSchema = new Schema<ICampaign>({
@@ -19,6 +20,7 @@ import mongoose, { Schema, model, Model } from 'mongoose';
        failedCount: { type: Number, required: true, min: 0 },
        createdAt: { type: Date, default: Date.now },
        tag:{type:String, required:true},
+       imageUrl: { type: String },
        customers: [{ type: String, ref: 'Customer' }],
      });
 

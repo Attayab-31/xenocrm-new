@@ -5,6 +5,7 @@ interface DeliveryReceipt {
   status: string;
   timestamp: string;
   campaignId?: string;
+  imageUrl?: string;
 }
 
 import { logger } from './logger';
@@ -146,7 +147,8 @@ ${campaignInfo ? `║ Campaigns: ${campaignInfo.padEnd(45)} ║\n` : ''}╚═�
   sendMessage: async function(
     customer: { id: string; name: string; email: string }, 
     message: string,
-    campaignId?: string
+    campaignId?: string,
+    imageUrl?: string
   ) {
     // Simulate real-world delivery success/failure (~90% SENT, ~10% FAILED)
     const success = Math.random() < 0.9;
@@ -161,7 +163,8 @@ ${campaignInfo ? `║ Campaigns: ${campaignInfo.padEnd(45)} ║\n` : ''}╚═�
       message,
       status,
       timestamp: new Date().toISOString(),
-      campaignId
+      campaignId,
+      imageUrl
     };
 
     // Add to batch

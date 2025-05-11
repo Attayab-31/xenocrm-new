@@ -21,7 +21,7 @@ async function getDashboardMetrics(userId: string) {
     })
       .sort({ timestamp: -1 })
       .limit(5)
-      .select("messageContent status timestamp"),
+      .select("message status timestamp"),
   ]);
 
   return { customerCount, campaignCount, recentLogs };
@@ -120,7 +120,7 @@ export default async function Dashboard() {
             <ul className="space-y-4">
               {recentLogs.map((log: any, index: number) => (
                 <li key={index} className="flex justify-between items-center">
-                  <span className="text-sm">{log.messageContent.slice(0, 50)}...</span>
+                  <span className="text-sm">{log.message?.slice(0, 50) || "No message content"}...</span>
                   <span
                     className={`text-sm font-medium ${
                       log.status === "SENT" ? "text-green-600" : "text-red-600"
